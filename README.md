@@ -7,6 +7,7 @@ This is a simple Python service that receives on-going events of sentences and c
 - [Installation](#installation)
 - [Usage](#usage)
 - [Running Tests](#running-tests)
+- [Stress Testing](#stress-testing)
 - [Linting](#linting)
 
 ## Installation
@@ -59,6 +60,27 @@ Interval is in seconds. The above command will return the statistics for the las
 ```sh
 docker-compose exec app pytest
 ```
+
+## Stress Testing
+
+### Setup venv
+```sh
+python3 -m venv venv
+```
+```sh
+source venv/bin/activate
+```
+### Install Locust
+```sh
+pip install locust
+```
+### Start Locust
+```sh
+locust -f locustfile.py --host=http://localhost:8000
+```
+#### Open browser and go to http://localhost:8089
+#### Set the number of users and spawn rate and click on "Start" button
+
 
 ## Linting
 ```sh

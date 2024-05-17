@@ -23,7 +23,7 @@ async def add_event(sentence: str):
         occurrences = len(re.findall(rf"\b{keyword}\b", sentence, re.IGNORECASE))
         for _ in range(occurrences):
             event_id = str(uuid.uuid4())
-            logger.debug("Adding event: %s to keyword: %s", sentence, keyword)
+            # logger.debug("Adding event: %s to keyword: %s", sentence, keyword)
             await redis_client.zadd(f"events:{keyword}", {event_id: timestamp})
 
 
@@ -41,7 +41,7 @@ async def get_stats(interval: int):
     results = await asyncio.gather(*tasks)
 
     for keyword, events in zip(keywords, results):
-        logger.debug("Keyword: %s, Events: %s", keyword, events)
+        # logger.debug("Keyword: %s, Events: %s", keyword, events)
         stats[keyword] = len(events)
 
     return stats
