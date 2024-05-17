@@ -26,17 +26,25 @@ def client(monkeypatch, fake_redis_client):
     [
         (
             "Avanan is a leading Enterprise Solution for Cloud Email and Collaboration Security",
-            ["avanan", "email", "security"],
+            {"avanan": 1, "email": 1, "security": 1},
         ),
         (
             "CheckPoint Research have been observing an enormous rise in email attacks since the beginning of 2020",
-            ["checkpoint", "email"],
+            {"checkpoint": 1, "email": 1},
         ),
         (
             "Checkpoint and Avanan and email and Security",
-            ["checkpoint", "avanan", "email", "security"],
+            {"checkpoint": 1, "avanan": 1, "email": 1, "security": 1},
         ),
-        ("", []),
+        (
+            "Checkpoint CHECKPOINT CheckPoinT CHECKPOINTS",
+            {"checkpoint": 3},
+        ),
+        (
+            "email EMAIL- eMaIl, emaail - emaaail - email -emails",
+            {"email": 4},
+        ),
+        ("", {}),
     ],
 )
 @pytest.mark.asyncio
@@ -46,8 +54,11 @@ async def test_add_event(client, fake_redis_client, sentence, expected_keywords)
     assert response.status_code == 201
     assert response.json() == {"message": "Event added"}
 
-    for keyword in expected_keywords:
-        assert len(await fake_redis_client.zrange(f"events:{keyword}", 0, -1)) > 0
+    for keyword, expected_count in expected_keywords.items():
+        events = await fake_redis_client.zrange(f"events:{keyword}", 0, -1)
+        assert (
+            len(events) == expected_count
+        ), f"Expected {expected_count} events for keyword '{keyword}', but got {len(events)}"
 
 
 @pytest.mark.asyncio

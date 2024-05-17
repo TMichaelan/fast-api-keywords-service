@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 import asyncio
 import uuid
+import re
 import redis.asyncio as redis
 from fastapi import FastAPI, Request, Query, HTTPException
 from fastapi.responses import JSONResponse
@@ -18,9 +19,10 @@ keywords = ["checkpoint", "avanan", "email", "security"]
 
 async def add_event(sentence: str):
     timestamp = datetime.now().timestamp()
-    event_id = str(uuid.uuid4())
     for keyword in keywords:
-        if keyword in sentence.lower():
+        occurrences = len(re.findall(rf"\b{keyword}\b", sentence, re.IGNORECASE))
+        for _ in range(occurrences):
+            event_id = str(uuid.uuid4())
             logger.debug("Adding event: %s to keyword: %s", sentence, keyword)
             await redis_client.zadd(f"events:{keyword}", {event_id: timestamp})
 
