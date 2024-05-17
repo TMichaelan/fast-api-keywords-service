@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt -r requirements.dev.txt
+
+      - name: Run Black
+        run: |
+          . venv/bin/activate
+          black --check --verbose .
+
+      - name: Run mypy
+        run: |
+          . venv/bin/activate
+          mypy app
+
+      - name: Run pylint
+        run: |
+          . venv/bin/activate
+          pylint app
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt -r requirements.dev.txt
+
+      - name: Run tests
+        run: |
+          . venv/bin/activate
+          pytest --cov=app
+
+      - name: Generate coverage report
+        run: |
+          . venv/bin/activate
+          coverage xml
+          coverage report
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: coverage.xml
+          flags: unittests
+          name: codecov-umbrella
