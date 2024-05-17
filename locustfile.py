@@ -1,5 +1,6 @@
 from locust import HttpUser, TaskSet, task, between
 
+
 class UserBehavior(TaskSet):
     @task
     def post_event(self):
@@ -10,6 +11,7 @@ class UserBehavior(TaskSet):
     @task
     def get_stats(self):
         self.client.get("/api/v1/stats?interval=60")
+
 
 class WebsiteUser(HttpUser):
     tasks = [UserBehavior]
