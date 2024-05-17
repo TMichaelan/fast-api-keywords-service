@@ -20,6 +20,17 @@ def client(monkeypatch, fake_redis_client):
     return TestClient(app)
 
 
+@pytest.fixture
+async def fake_events(fake_redis_client):
+    await fake_redis_client.zadd("events:email", {"event1": int(time.time())})
+    await fake_redis_client.zadd("events:security", {"event2": int(time.time())})
+    await fake_redis_client.zadd("events:checkpoint", {"event3": int(time.time())})
+    await fake_redis_client.zadd("events:avanan", {"event4": int(time.time())})
+    await fake_redis_client.zadd("events:avanan", {"event5": int(time.time())})
+    await fake_redis_client.zadd("events:checkpoint", {"event6": int(time.time())})
+    await fake_redis_client.zadd("events:checkpoint", {"event7": int(time.time())})
+
+
 # pylint: disable=line-too-long
 @pytest.mark.parametrize(
     "sentence, expected_keywords",
@@ -33,8 +44,8 @@ def client(monkeypatch, fake_redis_client):
             {"checkpoint": 1, "email": 1},
         ),
         (
-            "Checkpoint and Avanan and email and Security",
-            {"checkpoint": 1, "avanan": 1, "email": 1, "security": 1},
+            "Checkpoint and Avanan and email and Security and security",
+            {"checkpoint": 1, "avanan": 1, "email": 1, "security": 2},
         ),
         (
             "Checkpoint CHECKPOINT CheckPoinT CHECKPOINTS",
@@ -62,30 +73,27 @@ async def test_add_event(client, fake_redis_client, sentence, expected_keywords)
 
 
 @pytest.mark.asyncio
-async def test_get_stats(client, fake_redis_client):
-    await fake_redis_client.zadd("events:email", {"event1": int(time.time())})
-    await fake_redis_client.zadd("events:security", {"event2": int(time.time())})
-    await fake_redis_client.zadd("events:checkpoint", {"event3": int(time.time())})
-    await fake_redis_client.zadd("events:avanan", {"event4": int(time.time())})
+async def test_get_stats(client, fake_redis_client, fake_events):
+    await fake_events
 
     async with AsyncClient(app=app, base_url="http://test") as ac:
         response = await ac.get("/api/v1/stats?interval=60")
-    assert response.status_code == 200
     stats = response.json()
 
+    assert response.status_code == 200
     assert stats["email"] == 1
     assert stats["security"] == 1
-    assert stats["checkpoint"] == 1
-    assert stats["avanan"] == 1
+    assert stats["checkpoint"] == 3
+    assert stats["avanan"] == 2
 
 
 @pytest.mark.asyncio
 async def test_get_stats_no_events(client):
     async with AsyncClient(app=app, base_url="http://test") as ac:
         response = await ac.get("/api/v1/stats?interval=60")
-    assert response.status_code == 200
     stats = response.json()
 
+    assert response.status_code == 200
     assert stats["email"] == 0
     assert stats["security"] == 0
     assert stats["checkpoint"] == 0
