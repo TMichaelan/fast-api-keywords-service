@@ -72,4 +72,3 @@ docker-compose exec app pylint app
 ```
 
 ![Build Status](https://github.com/TMichaelan/fast-api-keywords-service/actions/workflows/ci.yml/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/TMichaelan/fast-api-keywords-service/badge.svg?branch=main)](https://coveralls.io/github/TMichaelan/fast-api-keywords-service?branch=main)
