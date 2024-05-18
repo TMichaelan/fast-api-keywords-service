@@ -8,9 +8,9 @@ import re
 import redis.asyncio as redis
 from fastapi import FastAPI, Request, Query, HTTPException
 from fastapi.responses import JSONResponse
-from aiologger import Logger
 
-logger = Logger.with_default_handlers(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 redis_client = redis.from_url("redis://redis", decode_responses=True)
@@ -52,7 +52,7 @@ async def events(request: Request):
         await add_event(sentence)
         return JSONResponse(content={"message": "Event added"}, status_code=201)
     except Exception as e:
-        await logger.error("Failed to add event: %s", str(e))
+        logger.error("Failed to add event: %s", str(e))
         raise HTTPException(status_code=500, detail="Failed to add event") from e
 
 
@@ -62,10 +62,5 @@ async def stats(interval: int = Query(60)):
         result = await get_stats(interval)
         return JSONResponse(content=result)
     except Exception as e:
-        await logger.error("Failed to get stats: %s", str(e))
+        logger.error("Failed to get stats: %s", str(e))
         raise HTTPException(status_code=500, detail="Failed to get stats") from e
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    await logger.shutdown()
