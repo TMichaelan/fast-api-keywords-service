@@ -5,7 +5,6 @@ class UserBehavior(TaskSet):
     @task
     def post_event(self):
         payload = "Avanan is a leading Enterprise Solution for Cloud Email and Collaboration Security, Checkpoint"
-        print(payload)
         self.client.post("/api/v1/events", data=payload)
 
     @task
